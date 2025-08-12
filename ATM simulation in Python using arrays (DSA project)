@@ -1,0 +1,138 @@
+#Intinal data
+Accounts = [100,101,102,103,104]
+pins = [0000,1111,2222,3333,4444]
+Balance = [10000,20000,3000,3200,700000]
+transactions = [[] for _ in range(len(Accounts))]
+daily_withdrawn = [0,0,0,0,0]
+
+#ATM CASH STORAGE
+atm_cash = [40,50,30]
+note_values = [500,200,100]
+atm_daily_limit = 25000
+
+#functions
+def display_atm_cash():
+  print("\nATM CASH AVAILABLE:")
+  for val,qty in zip(note_values,atm_cash):
+    print(f"{val}:{qty} notes")
+  total_cash = sum(val*qty for val,qty in zip(note_values,atm_cash))
+  print(f"Total_ATM_CASH :{total_cash}")
+
+def login():
+  acc = int(input("Enter the Account number:"))
+  pin = int(input("Enter the pin:"))
+  if acc in Accounts:
+    idx = Accounts.index(acc)
+    if pins[idx] == pin:
+      print("\Login successfull")
+      atm_menu(idx)
+    else:
+      print("Incorrect pin")
+  else:
+   print("Account not found")
+
+def atm_menu(idx):
+  while True:
+    print("\n====ATM MENU====")
+    print("1.Check Balance\n2.Deposit\n3.Withdraw\n4.Mini Statement\n5.Change Pin\n6.Logout")
+    choice = int(input("Enter Choice"))
+
+    if choice == 1:
+      print(f"Current Balance:{Balance[idx]}")
+
+    elif choice == 2:
+      amount = int(input("Enter the deposit amount:"))
+      if amount > 0:
+        Balance[idx] += amount
+        transactions[idx].append(f"Deposited {amount}")
+        print("Deposit Successful")
+      else:
+        print("Invalid amount")
+
+    elif choice == 3:
+       withdraw_amount(idx)
+
+    elif choice ==4:
+      print("\n Mini Statement")
+      for t in transactions[idx][-5:]:
+        print(t)
+      if not transactions[idx]:
+        print("No transactions")
+
+    elif choice == 5:
+      newpin = int(input("Enter the new pin:"))
+      pins[idx] = newpin
+      print("PIN changed successfully")
+
+    elif choice == 6:
+      print("Logged out")
+      break
+
+    else:
+      print("Invalid choice")
+
+def withdraw_amount(idx):
+  amount = int(input("Enter the withdrawal amount(multiple of 100)"))
+
+  if amount <=0 or amount%100 !=0:
+    print("Invalid amount")
+    return
+
+  if amount > Balance[idx]:
+    print("Insufficient account balance")
+    return
+
+  if daily_withdrawn[idx] + amount > atm_daily_limit:
+    print("Daily withdrawal limit exceeded")
+    return
+
+  total_atm_cash = sum(val * qty for val,qty in zip(note_values,atm_cash))
+
+  if amount > total_atm_cash:
+    print("ATM does not have enough cash")
+    return
+
+  notes_to_dispense = [0,0,0]
+  remaining = amount
+
+  for i in range (len(note_values)):
+    needed = remaining // note_values[i]
+    if needed > atm_cash[i]:
+      needed = atm_cash[i]
+    notes_to_dispense[i] = needed
+    remaining -= needed * note_values[i]
+
+  if remaining !=0:
+   print("cannot dispense the exact amount with available notes")
+   return
+
+# ATM Update & accounts
+  for i in range(len(note_values)):
+    atm_cash[i] -= notes_to_dispense[i]
+
+  Balance[idx] -= amount
+  daily_withdrawn[idx] += amount
+  transactions[idx].append(f"withdrew {amount}")
+  print(f"Please collect your cash:{notes_to_dispense}")
+
+
+#========main menu =======
+while True:
+  print("\n Welcome to ATM ")
+  print("1.Login\n2.Show ATM Cash\n3.Exit")
+  ch = int(input("Enter the choice:"))
+  if ch == 1:
+    login()
+  elif ch == 2:
+    display_atm_cash()
+  elif ch ==3:
+    print("Thank you for using ATM")
+    break
+  else:
+    print("Invalid choice")
+
+
+
+
+
+
